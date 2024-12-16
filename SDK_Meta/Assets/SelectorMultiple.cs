@@ -1,6 +1,4 @@
-using Oculus.Interaction;
-using System;
-using System.Collections;
+﻿using Oculus.Interaction;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -10,8 +8,9 @@ public class SelectorMultiple : MonoBehaviour
 {
     public string CurrentLeftGesture;
     public string CurrentRightGesture;
-    public TextMeshPro NombreGesto;
-    public List<GameObject> selectores;
+    public TextMeshPro NombreGesto;  // Texto para feedback
+    public List<GameObject> selectores;  // Lista de gestos configurados
+    private List<string> validGestures = new List<string>();  // Lista para guardar gestos completados
 
     void Start()
     {
@@ -19,7 +18,6 @@ public class SelectorMultiple : MonoBehaviour
         {
             if (selector.TryGetComponent<ISelector>(out var selector2))
             {
-                Debug.Log("selector");
                 if (selector.TryGetComponent<HandRef>(out var hand))
                 {
                     if (hand.Hand.Handedness == Handedness.Left)
@@ -37,46 +35,58 @@ public class SelectorMultiple : MonoBehaviour
         }
     }
 
-    private void OnUndetectGesture(string GestureName, bool islefthandness)
+    private void OnDetectGesture(string GestureName, bool isLeftHand)
     {
-        Debug.Log("GestoPerdido " + GestureName);
-        NombreGesto.text = "GestoPerdido";
-        if (islefthandness)
+        if (isLeftHand)
+            CurrentLeftGesture = GestureName;
+        else
+            CurrentRightGesture = GestureName;
+
+        // Validar combinación de gestos
+        if (CurrentRightGesture == "PinkyPose_R" && CurrentLeftGesture == "PaperPose_L")
         {
-            CurrentLeftGesture = "";
+            RegisterGesture("PinkyPaper", true);
+        }
+        else if (CurrentRightGesture == "PaperPose_R" && CurrentLeftGesture == "PinkyPose_L")
+        {
+            RegisterGesture("PaperPinky", true);
         }
         else
         {
-            CurrentRightGesture = "";
+            NombreGesto.text = GestureName;  // Mostrar el gesto actual
+            NombreGesto.color = Color.white;  // Color por defecto
         }
     }
 
-    private void OnDetectGesture(string GestureName, bool islefthandness)
+    private void OnUndetectGesture(string GestureName, bool isLeftHand)
     {
-        Debug.Log("GestoReconocido " + GestureName);
-        NombreGesto.text = GestureName;
-        if (islefthandness)
-        {
-            CurrentLeftGesture = GestureName;
-        }
+        if (isLeftHand)
+            CurrentLeftGesture = "";
         else
+            CurrentRightGesture = "";
+    }
+
+    private void RegisterGesture(string gestureName, bool isCorrect)
+    {
+        if (!validGestures.Contains(gestureName))  // Evitar duplicados
         {
-            CurrentRightGesture = GestureName;
-        }
-        if (CurrentRightGesture == "PinkyPose_R" && CurrentLeftGesture == "PaperPose_L")
-        {
-            Debug.Log("PinkyPaper");
-            NombreGesto.text = "PinkyPaper";
-        }
-        if (CurrentRightGesture == "PaperPose_R" && CurrentLeftGesture == "PinkyPose_L")
-        {
-            Debug.Log("PaperPinky");
-            NombreGesto.text = "PaperPinky";
+            validGestures.Add(gestureName);
+            NombreGesto.text = gestureName + (isCorrect ? " ✓" : " ✗");  // Feedback de gesto
+            NombreGesto.color = isCorrect ? Color.green : Color.red;  // Verde si esta bien, rojo si no
+            Debug.Log("Gesto guardado: " + gestureName);
         }
     }
 
     void Update()
     {
-
+        // Solo para depuracion: Mostrar la lista de gestos completados
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("Gestos registrados:");
+            foreach (string gesture in validGestures)
+            {
+                Debug.Log(gesture);
+            }
+        }
     }
 }
