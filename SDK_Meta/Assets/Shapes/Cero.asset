@@ -38,7 +38,7 @@ MonoBehaviour:
       _state: 0
     - _mode: 0
       _feature: 2
-      _state: 6
+      _state: 8
   _pinkyFeatureConfigs:
     _value:
     - _mode: 0
@@ -46,4 +46,4 @@ MonoBehaviour:
       _state: 0
     - _mode: 0
       _feature: 2
-      _state: 6
+      _state: 8
